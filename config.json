@@ -1,0 +1,24 @@
+{
+	"RefreshSeconds": 30,
+	"Sensors": [{
+		"Name": "jacuzzi",
+		"Id": 4494770337279,
+		"Thermostat": {
+			"Gpio": 21,
+			"Hysteresis": 0.6,
+			"Setpoint": 32
+		}
+	}],
+	"LogInflux": {
+		"Host": "http://10.100.81.60:8086/write",
+		"Database": "bry",
+		"Measurment": "devices",
+		"Tags": [{
+			"Name": "host",
+			"Value": "owkit-1"
+		},{
+			"Name": "location",
+			"Value": "rekreacja"
+		}]
+	}
+}
