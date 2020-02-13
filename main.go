@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"strings"
 	"strconv"
+	"net/http"
 	"path/filepath"
 	"encoding/json"
 	"time"
@@ -192,9 +193,14 @@ func (os *OwSet) StartCycling() {
 func (os *OwSet) PrintAll() {
 	freshness := time.Since(os.updated)
 	log.Printf("Printing all sensors, last refresh %fs ago\n", freshness.Seconds())
-	log.Printf("id\t\tname\t\tvalue\n")
+	fmt.Printf("id\t\tname\t\tvalue\t\tthermo?\t\tsetpoint\tstate\n")
 	for _, slave := range os.Sensors {
-		log.Printf("%s\t\t%x\t\t%.2f\n", slave.Name, slave.Id, slave.Value)
+		fmt.Printf("%s\t\t%x\t\t%.2f\t\t", slave.Name, slave.Id, slave.Value)
+		if slave.Thermostat == nil {
+			fmt.Printf("no\t\t-\t-\n")
+		} else {
+			fmt.Printf("yes\t\t%f\t%t\n", slave.Thermostat.Setpoint, slave.Thermostat.IsOn)
+		}
 	}
 }
 
@@ -211,9 +217,74 @@ func (os *OwSet) RunThermostats() {
 	}
 }
 
+func (os *OwSet) HandleSet(w http.ResponseWriter, r *http.Request) {
+	setS := &OwSlave{}
+    err := json.NewDecoder(r.Body).Decode(setS)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    for _, slave := range os.Sensors {
+    	if slave.Id == setS.Id {
+    		err := json.NewDecoder(r.Body).Decode(slave)
+    		if err != nil {
+    			http.Error(w, err.Error(), http.StatusBadRequest)	
+    		}
+    		return
+    	}
+    }
+
+    http.Error(w, "Sensor not found", 404)
+    return
+}
+
+func (os *OwSet) HandleState(w http.ResponseWriter, r *http.Request) {
+	
+	js, err := json.Marshal(os)
+	
+	if err != nil {
+	http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func (os OwSet) HandleAllHeatUp(w http.ResponseWriter, r *http.Request) {
+	urlSlice := strings.Split(r.URL.Path, "/")
+	if len(urlSlice) < 3 {
+		http.Error(w, "Bad request (url too short)", http.StatusBadRequest)
+		return
+	}
+
+	heatUpMode := false
+	if strings.ToLower(urlSlice[2]) == "on" {
+		heatUpMode = true
+	}
+	
+	for _, slave := range os.Sensors {
+		if slave.Thermostat != nil {
+			slave.Thermostat.HeatUpMode = heatUpMode
+		}
+	}
+}
+
+func (os *OwSet) StartServer() {
+
+ 	http.HandleFunc("/set", os.HandleSet)
+ 	http.HandleFunc("/heatup/", os.HandleAllHeatUp)
+ 	http.HandleFunc("/state", os.HandleState)
+	
+	go func(){
+		log.Fatal(http.ListenAndServe(":80", nil))
+	}()
+}
+
 type OwSlave struct {
 	Name		string
-	Id			uint64
+	Id			uint64 
 	Value		float64
 
 	Thermostat		*Thermo
@@ -265,6 +336,8 @@ func main() {
 
 	log.Print("cycling..")
 	wires.StartCycling()
+	log.Print("starting http server..")
+	wires.StartServer()
 
 	for {
 		time.Sleep(10 * time.Second)

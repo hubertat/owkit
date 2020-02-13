@@ -7,25 +7,39 @@ import (
 )
 
 type Thermo struct {
-	Gpio	int
-	Invert	bool
+	Gpio		int
+	Invert		bool
 
-	isOn bool
+	IsOn 			bool
+	HeatUpMode		bool
 
-	Setpoint, Hysteresis, Min, Max float64
-	Sensor		*OwSlave		`json:"-"`
+	Setpoint, Hysteresis, Min, Max, HeatUp 			float64
+	
+	Sensor			*OwSlave		`json:"-"`
 }
 
 func (th *Thermo) Run() (err error) {
-	if th.isOn {
-		if th.Sensor.Value > (th.Setpoint + th.Hysteresis) {
+
+	if th.IsOn {
+		if th.Sensor.Value > (th.GetSetpoint() + th.Hysteresis) {
 			err = th.Set(false)
-			return
 		}
 	} else {
-		if th.Sensor.Value < (th.Setpoint - th.Hysteresis) {
+		if th.Sensor.Value < (th.GetSetpoint() - th.Hysteresis) {
 			err = th.Set(true)
-			return
+		}
+	}
+	return
+}
+
+func (th *Thermo) GetSetpoint() (setpoint float64) {
+	setpoint = th.Setpoint
+
+	if th.HeatUpMode {
+		if th.HeatUp + th.Setpoint > th.Max {
+			setpoint = th.Max
+		} else {
+			setpoint += th.HeatUp
 		}
 	}
 	return
@@ -48,9 +62,9 @@ func (th *Thermo) ReadState() error {
 		state = false	
 	}
 	if th.Invert {
-		th.isOn = !state
+		th.IsOn = !state
 	} else {
-		th.isOn = state
+		th.IsOn = state
 	}
 
 	return nil
@@ -68,7 +82,7 @@ func (th *Thermo) Set(state bool) (error) {
 	pin := rpio.Pin(th.Gpio)
 	pin.Output()
 
-	th.isOn = state
+	th.IsOn = state
 
 	if th.Invert {
 		state = !state
@@ -82,3 +96,60 @@ func (th *Thermo) Set(state bool) (error) {
 
 	return nil
 }
+
+func (th *Thermo) SetHeatUp(state ...bool) {
+	if len(state) > 1 {
+		th.HeatUpMode = state[0]
+	} else {
+		th.HeatUpMode = true
+	}
+}
+
+func (th *Thermo) CheckIfOn() uint {
+	if th.IsOn {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+func (th *Thermo) CheckIfHeatUp() uint {
+	if th.HeatUpMode {
+		return 1
+	} else {
+		return 0
+	}
+}
+
+// type OffPeak struct {
+// 	StartWeekday, StopWeekday	time.Weekday
+// 	StartHour, StopHour			int
+// 	StartMinute, StopMinute		int
+// }
+
+
+// func (op *OffPeak) CheckIfInside(when time.Time) (result bool) {
+// 	// check if Weekday matters at all
+// 	if op.StartWeekday == op.StopWeekday {
+// 		dayStart := when.Day()
+// 		dayStop := when.Day()
+// 	} else {
+
+// 	}
+// 	tStart := time.Date(when.Year(), when.Month(), dayStart, op.StartHour, op.StartMinute, 0, 0, when.Location())
+// 	tStop := time.Date(when.Year(), when.Month(), dayStop, op.StopHour, op.StartMinute, 0, 0, when.Location())
+	
+// 	// check if stop is after start
+// 	if tStop.After(tStart) {
+// 		if when.After(tStart) && when.Before(tStop) {
+// 			result = true
+// 		}
+// 	} else {
+// 		// it means that offPeak period is not contained in one day, we should require only one condition
+// 		if when.After(tStart) || when.Before(tStop) {
+// 			result = true
+// 		}
+// 	}
+
+// 	return
+// }
