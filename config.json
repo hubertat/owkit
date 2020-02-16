@@ -12,13 +12,16 @@
 	"LogInflux": {
 		"Host": "http://10.100.81.60:8086/write",
 		"Database": "bry",
-		"Measurment": "devices",
+		"Measurment": "thermostat",
 		"Tags": [{
 			"Name": "host",
 			"Value": "owkit-1"
 		},{
 			"Name": "location",
 			"Value": "rekreacja"
+		},{
+			"Name": "device",
+			"Value": "jacuzzi"
 		}]
 	}
 }
