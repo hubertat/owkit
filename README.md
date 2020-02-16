@@ -29,11 +29,37 @@ Next line will set selected gpio pin (here *21*) in ouput mode and default LOW s
 gpio=21=op,dl
 ```
 
-### download owkit
+### owkit installation
+
+#### get owkit
+
+Download binary or build from source
 
 TODO
 
-### run as deamon
+#### move binary
+
+Make sure binary is executable:
+```
+chmod +x owkit
+```
+
+It will be more convenient to put binary in `/usr/bin` folder:
+```
+sudo cp owkit /usr/bin/
+```
+
+Now you can just run `owkit` from anywhere in filesystem.
+
+#### prepare config
+
+Prepare config file and move it to location:
+1. `./config.json` if you use *owkit* locally
+2. `/etc/owkit.json` otherwise
+
+Application will look for config file in order as above. Is no config will be found it will fail.
+
+#### run as deamon
 
 To run as a service and log to file you can use command:
 ```
