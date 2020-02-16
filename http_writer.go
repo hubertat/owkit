@@ -25,7 +25,14 @@ func (hw *HttpWriter) Send(slaves []*OwSlave) error {
 
 	switch hw.Method {
 	case http.MethodGet:
-		url := url.URL{Host: hw.Host, RawQuery: hw.getSlavesQuery(slaves).Encode()}
+		url, err := url.Parse(hw.Host)
+		if err != nil {
+			return fmt.Errorf("HttpWriter Send parsing host url (%v) failed:\n%v", hw.Host, err)
+		}
+		if url.Scheme == "" {
+			url.Scheme = "http"
+		}
+		url.RawQuery = hw.getSlavesQuery(slaves).Encode()
 		req, err = http.NewRequest(hw.Method, url.String(), nil)
 		if err != nil {
 			return fmt.Errorf("HttpWriter Send NewRequest (%v) failed:\n%v", hw.Method, err)
