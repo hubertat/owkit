@@ -45,8 +45,10 @@ func main() {
 	log.Print("cycling..")
 	wires.StartCycling()
 	
-	log.Print("starting http server..")
-	wires.Server.Start()
+	if wires.Server != nil {
+		log.Print("starting http server..")
+		wires.Server.Start()
+	}
 
 	for {
 		time.Sleep(10 * time.Second)
