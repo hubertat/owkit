@@ -23,6 +23,7 @@ type OwSet struct {
 	SendHttp	*HttpWriter		`json:",omitempty"`
 	
 	Server		*Server			`json:",omitempty"`
+	OffPeak		*OffPeak		`json:",omitempty"`
 
 	RefreshSeconds		int	`json:",omitempty"`
 	
@@ -194,6 +195,15 @@ func (os *OwSet) cycling() {
 			if err != nil {
 				log.Printf("ERROR [in OwSet] during refreshing during cycling:\n%v", err)
 			} else {
+
+				if os.OffPeak != nil {
+					heatUpMode := os.OffPeak.Check()
+					for _, slave := range srv.set.Sensors {
+						if slave.Thermostat != nil {
+							slave.Thermostat.HeatUpMode = heatUpMode
+						}
+					}
+				}
 				os.PrintAll()
 				os.RunThermostats()
 
