@@ -16,6 +16,7 @@ import (
 type OwSet struct {
 	Path		string		`json:",omitempty"`
 	SlavePrefix	string		`json:",omitempty"`
+	Debug		bool
 
 	Sensors		[]*OwSlave		`json:",omitempty"`
 
@@ -32,6 +33,18 @@ type OwSet struct {
 	tick	       		*time.Ticker
 	blocker				sync.Mutex
 }	
+
+func (os *OwSet) LogDebug(string message, err error) {
+	if !os.Debug {
+		return
+	}
+
+	log.Printf("? Debug:\n%s\n%v\n", message, err)
+}
+
+func (os *OwSet) Log(string message, err error) {
+	log.Printf("%s\n%v\n", message, err)	
+}
 
 func (os *OwSet) CheckIfSet() bool {
 	if len(os.Path) == 0 && len(os.SlavePrefix) == 0 {
