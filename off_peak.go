@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"net/url"
 	"io/ioutil"
 )
 
@@ -25,7 +24,7 @@ func (op *OffPeak) Check() bool {
 		return false
 	}
 
-	if info == "true" {
+	if string(info) == "true" {
 		return true
 	}
 

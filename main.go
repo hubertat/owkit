@@ -36,6 +36,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if wires.Debug {
+		log.Println("Debugging is enabled!")
+	}
+
 	err = wires.InitSlaves()
 	if err != nil {
 		log.Fatal(err)

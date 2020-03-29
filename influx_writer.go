@@ -82,6 +82,7 @@ func (ifw *InfluxWriter) GetThermoLines(thermo *Thermo) (line string) {
 	}
 
 	line = baseline + fmt.Sprintf(" setpoint=%f\n", thermo.Setpoint)
+	line += baseline + fmt.Sprintf(" real-sp=%f\n", thermo.GetSetpoint())
 	line += baseline + fmt.Sprintf(" state=%v\n", thermo.CheckIfOn())
 	line += baseline + fmt.Sprintf(" heatup=%v\n", thermo.CheckIfHeatUp())
 

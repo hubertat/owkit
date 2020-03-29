@@ -16,7 +16,7 @@ import (
 type OwSet struct {
 	Path		string		`json:",omitempty"`
 	SlavePrefix	string		`json:",omitempty"`
-	Debug		bool
+	Debug		bool		`json:",omitempty"`
 
 	Sensors		[]*OwSlave		`json:",omitempty"`
 
@@ -34,16 +34,16 @@ type OwSet struct {
 	blocker				sync.Mutex
 }	
 
-func (os *OwSet) LogDebug(string message, err error) {
+func (os *OwSet) LogDebug(message string) {
 	if !os.Debug {
 		return
 	}
 
-	log.Printf("? Debug:\n%s\n%v\n", message, err)
+	log.Printf("? Debug:\n%s\n", message)
 }
 
-func (os *OwSet) Log(string message, err error) {
-	log.Printf("%s\n%v\n", message, err)	
+func (os *OwSet) Log(message string) {
+	log.Printf("%s\n", message)	
 }
 
 func (os *OwSet) CheckIfSet() bool {
@@ -73,6 +73,7 @@ func (os *OwSet) Set(configPath ...string) error {
 		return fmt.Errorf("OwSet Set: error openning config file:\n %w", err)
 	}
 
+	os.Log(fmt.Sprintf("Loading config form file: %s\n", configPath))
 	err = json.Unmarshal([]byte(configFile), os)
 	if err != nil {
 		return fmt.Errorf("OwSet Set: error reading config(json) into OwSet:\n %w", err)
@@ -212,7 +213,7 @@ func (os *OwSet) cycling() {
 				if os.OffPeak != nil {
 					os.LogDebug("OffPeak enabled [OwSet], checking state")
 					heatUpMode := os.OffPeak.Check()
-					for _, slave := range srv.set.Sensors {
+					for _, slave := range os.Sensors {
 						if slave.Thermostat != nil {
 							os.LogDebug(fmt.Sprintf("Thermostat found, setting heatUpMode: %v", heatUpMode))
 							slave.Thermostat.HeatUpMode = heatUpMode
