@@ -15,3 +15,7 @@
 # vendor/
 
 config.json
+
+owkit
+owkit-*
+owkit_*
