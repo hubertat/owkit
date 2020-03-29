@@ -210,9 +210,11 @@ func (os *OwSet) cycling() {
 			} else {
 
 				if os.OffPeak != nil {
+					os.LogDebug("OffPeak enabled [OwSet], checking state")
 					heatUpMode := os.OffPeak.Check()
 					for _, slave := range srv.set.Sensors {
 						if slave.Thermostat != nil {
+							os.LogDebug(fmt.Sprintf("Thermostat found, setting heatUpMode: %v", heatUpMode))
 							slave.Thermostat.HeatUpMode = heatUpMode
 						}
 					}
