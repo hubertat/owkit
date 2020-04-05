@@ -70,6 +70,38 @@ func (srv *Server) HandleAllHeatUp(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (srv *Server) HandleSetpointIncrease(w http.ResponseWriter, r *http.Request) {
+	urlSlice := strings.Split(r.URL.Path, "/")
+
+	var slaves []*OwSlave
+
+	if len(urlSlice) > 2 {
+		slaves = append(slaves, srv.set.GetSlave(urlSlice[2]))
+	} else {
+		slaves = srv.set.Sensors
+	}
+
+	for _, slave := range slaves {
+		slave.Thermostat.Setpoint = slave.Thermostat.Setpoint + 0.5
+	}
+}
+
+func (srv *Server) HandleSetpointDecrease(w http.ResponseWriter, r *http.Request) {
+	urlSlice := strings.Split(r.URL.Path, "/")
+
+	var slaves []*OwSlave
+
+	if len(urlSlice) > 2 {
+		slaves = append(slaves, srv.set.GetSlave(urlSlice[2]))
+	} else {
+		slaves = srv.set.Sensors
+	}
+
+	for _, slave := range slaves {
+		slave.Thermostat.Setpoint = slave.Thermostat.Setpoint - 0.5
+	}
+}
+
 func (srv *Server) HandleSetSetpoint(w http.ResponseWriter, r *http.Request) {
 	urlSlice := strings.Split(r.URL.Path, "/")
 	if len(urlSlice) < 4 {
@@ -109,6 +141,8 @@ func (srv *Server) Start() {
 
  	http.HandleFunc("/set", srv.HandleSet)
  	http.HandleFunc("/setpoint/", srv.HandleSetSetpoint)
+ 	http.HandleFunc("/increase/", srv.HandleSetpointIncrease)
+ 	http.HandleFunc("/decrease/", srv.HandleSetpointDecrease)
  	http.HandleFunc("/heatup/", srv.HandleAllHeatUp)
  	http.HandleFunc("/state", srv.HandleState)
 	

@@ -167,6 +167,19 @@ func (os *OwSet) GetSlaveByName(name string) *OwSlave {
 	return nil
 }
 
+func (os *OwSet) GetSlave(ident string) *OwSlave {
+	var slave *OwSlave
+	intId, err := strconv.ParseUint(ident, 10, 64)
+	if err != nil {
+		slave = os.GetSlaveById(intId)
+		if slave != nil {
+			return slave
+		}
+	}
+
+	return os.GetSlaveByName(ident)
+}
+
 func (os *OwSet) RefreshAll() error {
 
 	if os.updated.IsZero() {
