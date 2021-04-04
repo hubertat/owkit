@@ -1,38 +1,38 @@
-package main 
+package main
 
 import (
-	"fmt"
-	"log"
-	"io/ioutil"
-	"strings"
-	"strconv"
-	"path/filepath"
 	"encoding/json"
-	"time"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"path/filepath"
+	"strconv"
+	"strings"
 	"sync"
+	"time"
 )
 
-
 type OwSet struct {
-	Path		string		`json:",omitempty"`
-	SlavePrefix	string		`json:",omitempty"`
-	Debug		bool		`json:",omitempty"`
+	Path        string `json:",omitempty"`
+	SlavePrefix string `json:",omitempty"`
+	Debug       bool   `json:",omitempty"`
 
-	Sensors		[]*OwSlave		`json:",omitempty"`
+	Sensors []*OwSlave `json:",omitempty"`
 
-	LogInflux	*InfluxWriter	`json:",omitempty"`
-	SendHttp	*HttpWriter		`json:",omitempty"`
-	
-	Server		*Server			`json:",omitempty"`
-	OffPeak		*OffPeak		`json:",omitempty"`
+	LogInflux *InfluxWriter `json:",omitempty"`
+	SendHttp  *HttpWriter   `json:",omitempty"`
 
-	RefreshSeconds		int	`json:",omitempty"`
-	
-	updated				time.Time
-	refreshInterval		time.Duration
-	tick	       		*time.Ticker
-	blocker				sync.Mutex
-}	
+	Server      *Server           `json:",omitempty"`
+	OffPeak     *OffPeak          `json:",omitempty"`
+	EnergyPanel *VictronGridMeter `json:",omitempty"`
+
+	RefreshSeconds int `json:",omitempty"`
+
+	updated         time.Time
+	refreshInterval time.Duration
+	tick            *time.Ticker
+	blocker         sync.Mutex
+}
 
 func (os *OwSet) LogDebug(message string) {
 	if !os.Debug {
@@ -43,13 +43,13 @@ func (os *OwSet) LogDebug(message string) {
 }
 
 func (os *OwSet) Log(message string) {
-	log.Printf("%s\n", message)	
+	log.Printf("%s\n", message)
 }
 
 func (os *OwSet) CheckIfSet() bool {
 	if len(os.Path) == 0 && len(os.SlavePrefix) == 0 {
 		return false
-	} 
+	}
 
 	return true
 }
@@ -85,7 +85,7 @@ func (os *OwSet) Set(configPath ...string) error {
 
 	for _, slave := range os.Sensors {
 		slave.InitId()
-		
+
 		err = slave.InitThermo()
 		if err != nil {
 			return fmt.Errorf("OwSet Set | error initializing thermostat:\n%v", err)
@@ -112,7 +112,7 @@ func (os *OwSet) InitSlaves(settings ...string) error {
 	devs, err := ioutil.ReadDir(os.Path)
 	if err != nil {
 		return fmt.Errorf("OwSet InitSlaves: error reading dir (%s):\n%w", os.Path, err)
-	}		
+	}
 
 	var zeroId, alreadyHere *OwSlave
 
@@ -126,7 +126,7 @@ func (os *OwSet) InitSlaves(settings ...string) error {
 
 					alreadyHere = os.GetSlaveById(id)
 					if alreadyHere != nil {
-				
+
 						alreadyHere.SetFromInt(val)
 					} else {
 
@@ -143,7 +143,7 @@ func (os *OwSet) InitSlaves(settings ...string) error {
 
 	}
 	os.updated = time.Now()
-	
+
 	return nil
 }
 
@@ -191,7 +191,7 @@ func (os *OwSet) RefreshAll() error {
 
 	os.blocker.Lock()
 	defer os.blocker.Unlock()
-	
+
 	for _, slave := range os.Sensors {
 
 		wslave, err := ioutil.ReadFile(filepath.Join(os.Path, fmt.Sprintf("%s%012x", os.SlavePrefix, slave.Id), "w1_slave"))
@@ -222,14 +222,33 @@ func (os *OwSet) cycling() {
 			if err != nil {
 				log.Printf("ERROR [in OwSet] during refreshing during cycling:\n%v", err)
 			} else {
-
+				var offPeakHeatUp, energyPanelHeatUp bool
 				if os.OffPeak != nil {
 					os.LogDebug("OffPeak enabled [OwSet], checking state")
-					heatUpMode := os.OffPeak.Check()
+					offPeakHeatUp = os.OffPeak.Check()
+				}
+				if os.EnergyPanel != nil {
+					os.LogDebug("EnergyPanel enabled, ticking and checking")
+					err = os.EnergyPanel.Tick()
+					if err != nil {
+						os.Log(fmt.Sprintf("Received error from EnergyPanel.Tick(): %v", err))
+					} else {
+						os.LogDebug(os.EnergyPanel.GetDebugString())
+						energyPanelHeatUp = os.EnergyPanel.CheckAvPowerLimit()
+					}
+
+				}
+				if offPeakHeatUp || energyPanelHeatUp {
+					if offPeakHeatUp {
+						os.LogDebug("Received OffPeak, setting heat up mode")
+					}
+					if energyPanelHeatUp {
+						os.LogDebug("Received OK Power Limit from Energy Panel, setting heat up mode")
+					}
 					for _, slave := range os.Sensors {
 						if slave.Thermostat != nil {
-							os.LogDebug(fmt.Sprintf("Thermostat found, setting heatUpMode: %v", heatUpMode))
-							slave.Thermostat.HeatUpMode = heatUpMode
+							os.LogDebug(fmt.Sprintf("Thermostat found, setting heatUpMode: %v", (energyPanelHeatUp || offPeakHeatUp)))
+							slave.Thermostat.HeatUpMode = energyPanelHeatUp || offPeakHeatUp
 						}
 					}
 				}
