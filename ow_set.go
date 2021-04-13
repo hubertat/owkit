@@ -238,18 +238,17 @@ func (os *OwSet) cycling() {
 					}
 
 				}
-				if offPeakHeatUp || energyPanelHeatUp {
-					if offPeakHeatUp {
-						os.LogDebug("Received OffPeak, setting heat up mode")
-					}
-					if energyPanelHeatUp {
-						os.LogDebug("Received OK Power Limit from Energy Panel, setting heat up mode")
-					}
-					for _, slave := range os.Sensors {
-						if slave.Thermostat != nil {
-							os.LogDebug(fmt.Sprintf("Thermostat found, setting heatUpMode: %v", (energyPanelHeatUp || offPeakHeatUp)))
-							slave.Thermostat.HeatUpMode = energyPanelHeatUp || offPeakHeatUp
-						}
+
+				if offPeakHeatUp {
+					os.LogDebug("Received OffPeak, setting heat up mode")
+				}
+				if energyPanelHeatUp {
+					os.LogDebug("Received OK Power Limit from Energy Panel, setting heat up mode")
+				}
+				for _, slave := range os.Sensors {
+					if slave.Thermostat != nil {
+						os.LogDebug(fmt.Sprintf("Thermostat found, setting heatUpMode: %v", (energyPanelHeatUp || offPeakHeatUp)))
+						slave.Thermostat.HeatUpMode = energyPanelHeatUp || offPeakHeatUp
 					}
 				}
 				os.PrintAll()
