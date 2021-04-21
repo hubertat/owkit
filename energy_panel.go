@@ -61,7 +61,11 @@ func (vgm *VictronGridMeter) cleanOldReadouts() {
 	holdDuration := time.Minute * time.Duration(vgm.HoldMinutes)
 	for ix, readout := range vgm.readouts {
 		if time.Since(readout.When) > holdDuration {
-			vgm.readouts = append(vgm.readouts[:ix], vgm.readouts[ix+1:]...)
+			if (ix + 1) == len(vgm.readouts) {
+				vgm.readouts = vgm.readouts[:ix]
+			} else {
+				vgm.readouts = append(vgm.readouts[:ix], vgm.readouts[ix+1:]...)
+			}
 		}
 	}
 }

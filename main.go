@@ -2,16 +2,16 @@ package main
 
 import (
 	"log"
-	"time"
 	"os"
+	"time"
 )
 
 func isCorrectFile(path string) bool {
 	fileInfo, err := os.Stat(path)
-    if os.IsNotExist(err) {
-        return false
-    }
-    return !fileInfo.IsDir()
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !fileInfo.IsDir()
 }
 
 func main() {
@@ -45,10 +45,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	
 	log.Print("cycling..")
 	wires.StartCycling()
-	
+
 	if wires.Server != nil {
 		log.Print("starting http server..")
 		wires.Server.Start()
