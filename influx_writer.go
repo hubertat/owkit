@@ -34,6 +34,7 @@ func getTagMap(tags []Tag) (tagMap map[string]string) {
 	for _, tag := range tags {
 		tagMap[tag.Name] = tag.Value
 	}
+
 	return
 }
 
