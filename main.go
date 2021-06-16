@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	servicemaker "service-maker"
 	"time"
+
+	servicemaker "github.com/hubertat/service-maker"
 )
 
 func isCorrectFile(path string) bool {
