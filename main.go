@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	servicemaker "github.com/hubertat/service-maker"
+	"github.com/hubertat/servicemaker"
 )
 
 func isCorrectFile(path string) bool {
@@ -20,7 +20,7 @@ func isCorrectFile(path string) bool {
 
 var owkitService = servicemaker.ServiceMaker{
 	User:               "owkit",
-	UserGroups:         []string{},
+	UserGroups:         []string{"gpio"},
 	ServicePath:        "/etc/systemd/system/owkit.service",
 	ServiceDescription: "Owkit service: reading 1-wire sensor temperature and thermostat with gpio rpi output.",
 	ExecDir:            "/srv/owkit",
@@ -87,7 +87,7 @@ func main() {
 		}
 	}
 	if path == "" {
-		log.Fatal("Config file not found!\n(looking in: %v)", confPaths)
+		log.Fatalf("Config file not found!\n(looking in: %v)", confPaths)
 	}
 
 	wires := OwSet{}

@@ -2,19 +2,17 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"strconv"
+	"strings"
 )
 
-
-
 type OwSlave struct {
-	Name		string
-	Id			uint64
-	HexId		string		`json:",omitempty"`
-	Value		float64
+	Name  string
+	Id    uint64
+	HexId string `json:",omitempty"`
+	Value float64
 
-	Thermostat		*Thermo
+	Thermostat *Thermo
 }
 
 func (slave *OwSlave) SetFromInt(input uint64) {
@@ -24,7 +22,7 @@ func (slave *OwSlave) SetFromInt(input uint64) {
 func (slave *OwSlave) InitId() bool {
 	if len(slave.HexId) > 1 {
 		idSlice := strings.Split(slave.HexId, "-")
-		id, err := strconv.ParseUint(idSlice[len(idSlice) - 1], 16, 64)
+		id, err := strconv.ParseUint(idSlice[len(idSlice)-1], 16, 64)
 		if err == nil {
 			slave.Id = id
 			return true
@@ -36,7 +34,7 @@ func (slave *OwSlave) InitId() bool {
 
 func (slave *OwSlave) InitThermo() error {
 	if slave.Thermostat == nil {
-		return nil 
+		return nil
 	}
 
 	if slave.Thermostat.Gpio == 0 {

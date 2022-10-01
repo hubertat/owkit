@@ -13,12 +13,8 @@ github.com/goburrow/modbus v0.1.0/go.mod h1:Kx552D5rLIS8E7TyUwQ/UdHEqvX5T8tyiGBT
 github.com/goburrow/serial v0.1.0 h1:v2T1SQa/dlUqQiYIT8+Cu7YolfqAi3K96UmhwYyuSrA=
 github.com/goburrow/serial v0.1.0/go.mod h1:sAiqG0nRVswsm1C97xsttiYCzSLBmUZ/VSlVLZJ8haA=
 github.com/golangci/lint-1 v0.0.0-20181222135242-d2cdd8c08219/go.mod h1:/X8TswGSh1pIozq4ZwCfxS0WA5JGXguxk94ar/4c87Y=
-github.com/hubertat/service-maker v0.0.0-20210421215535-6a257c57f9bb h1:ARt2GI8Wb2vpCgkPUN+AnIQSi68nVDFkNz5y5BHJ+fQ=
-github.com/hubertat/service-maker v0.0.0-20210421215535-6a257c57f9bb/go.mod h1:wFWniY4X/Le8IQks3RIk72oLteOXzcGIip3rXKRDUFM=
-github.com/hubertat/service-maker v0.0.1 h1:fL42vrhoUr6QIKObepTv+MEt8D7TZiM6iC1T4wPtqvU=
-github.com/hubertat/service-maker v0.0.1/go.mod h1:YgjBQ5MkgGdgLP0xpTgY+cqtT6Y01YN4H+U9DSvmVd8=
-github.com/hubertat/service-maker v0.0.2 h1:8tW3UhsBtxD8H8Ed2NOeiSTWNcE2SOPTYqn1hqBp3o0=
-github.com/hubertat/service-maker v0.0.2/go.mod h1:YgjBQ5MkgGdgLP0xpTgY+cqtT6Y01YN4H+U9DSvmVd8=
+github.com/hubertat/servicemaker v0.1.2 h1:jf5idZ8A3kK+hFHrchH2WOnvLSf61GkMSaWzBOvCtUQ=
+github.com/hubertat/servicemaker v0.1.2/go.mod h1:5nuaLIyaepJEuzaoSvjRYabwjwkWFdLvBwv5cLDhxPQ=
 github.com/influxdata/influxdb-client-go/v2 v2.2.3 h1:082jdJ5t1CFeo0rpGQvKAK1mONVSbFhL4finWA5bRM8=
 github.com/influxdata/influxdb-client-go/v2 v2.2.3/go.mod h1:fa/d1lAdUHxuc1jedx30ZfNG573oQTQmUni3N6pcW+0=
 github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839 h1:W9WBk7wlPfJLvMCdtV4zPulc4uCPrlywQOmbFOhgQNU=

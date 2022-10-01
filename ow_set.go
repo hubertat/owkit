@@ -27,8 +27,8 @@ type OwSet struct {
 	EnergyPanel *VictronGridMeter `json:",omitempty"`
 
 	RefreshSeconds int `json:",omitempty"`
+	Updated        time.Time
 
-	updated         time.Time
 	refreshInterval time.Duration
 	tick            *time.Ticker
 	blocker         sync.Mutex
@@ -101,7 +101,7 @@ func (os *OwSet) InitSlaves(settings ...string) error {
 
 	err := os.Set(settings...)
 	if err != nil {
-		return fmt.Errorf("OwSet InitSlaves: Set failed:\n%w")
+		return fmt.Errorf("OwSet InitSlaves: Set failed:\n%v", err)
 	}
 
 	if !os.CheckIfSet() {
@@ -142,7 +142,7 @@ func (os *OwSet) InitSlaves(settings ...string) error {
 		}
 
 	}
-	os.updated = time.Now()
+	os.Updated = time.Now()
 
 	return nil
 }
@@ -182,7 +182,7 @@ func (os *OwSet) GetSlave(ident string) *OwSlave {
 
 func (os *OwSet) RefreshAll() error {
 
-	if os.updated.IsZero() {
+	if os.Updated.IsZero() {
 		err := os.InitSlaves()
 		if err != nil {
 			return fmt.Errorf("OwSet RefreshAll: error during forced InitSlaves:\n%w", err)
@@ -208,7 +208,7 @@ func (os *OwSet) RefreshAll() error {
 
 		slave.SetFromInt(val)
 	}
-	os.updated = time.Now()
+	os.Updated = time.Now()
 
 	return nil
 }
@@ -278,7 +278,7 @@ func (os *OwSet) StartCycling() {
 }
 
 func (os *OwSet) PrintAll() {
-	freshness := time.Since(os.updated)
+	freshness := time.Since(os.Updated)
 	log.Printf("Printing all sensors, last refresh %fs ago\n", freshness.Seconds())
 	fmt.Printf("id\t\tname\t\tvalue\t\tthermo?\t\tsetpoint\tstate\n")
 	for _, slave := range os.Sensors {
