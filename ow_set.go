@@ -201,9 +201,18 @@ func (os *OwSet) RefreshAll() error {
 		if string(wslave[36:39]) != "YES" {
 			return fmt.Errorf("OwSet RefreshAll: (id %x) crc not YES, aborting", slave.Id)
 		}
-		val, err := strconv.ParseUint(string(wslave[69:74]), 10, 64)
+		wslaveRaw := string(wslave)
+		tempSlice := strings.Split(wslaveRaw, "t=")
+		if len(tempSlice) != 2 {
+			return fmt.Errorf("OwSet RefreshAll: (id %x) t= not found or found multiple times, aborting", slave.Id)
+		}
+		if len(tempSlice[1]) == 0 {
+			return fmt.Errorf("OwSet RefreshAll: (id %x) empty value, aborting", slave.Id)
+		}
+		tempStr := strings.TrimSpace(tempSlice[1])
+		val, err := strconv.ParseUint(tempStr, 10, 64)
 		if err != nil {
-			return fmt.Errorf("OwSet RefreshAll: error parsing value (id %x):\n%w\naborting", slave.Id, err)
+			return fmt.Errorf("OwSet RefreshAll: error parsing value (%s) (id %x):\n%w\naborting", tempStr, slave.Id, err)
 		}
 
 		slave.SetFromInt(val)
